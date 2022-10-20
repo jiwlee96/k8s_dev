@@ -1,0 +1,56 @@
+# Define api application deployment state
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: express-api
+  labels:
+    app: express-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: express-api
+  template:
+    metadata:
+      labels:
+        app: express-api
+    spec:
+      containers:
+      - name: aexpress-api
+        image: peter/express-api
+        imagePullPolicy: Never
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: express-api
+  labels:
+    app: express-api
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: express-api
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: express-api
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: express-api
+            port: 
+              number: 8080
